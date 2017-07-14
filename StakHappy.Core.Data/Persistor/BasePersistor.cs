@@ -4,6 +4,15 @@ using StakHappy.Core.Data.Model;
 
 namespace StakHappy.Core.Data.Persistor
 {
+    public interface IPersistor<T> where T : class, IEntity, new()
+    {
+        T Get(Guid id);
+        IQueryable<T> Get(System.Linq.Expressions.Expression<Func<T, bool>> predicate);
+        IQueryable<T> Get();
+        T Save(T entity);
+        void Delete(Guid id);
+    }
+
     public abstract class BasePersistor<T> where T : class, IEntity, new()
     {
         internal Context DbContext { get; set; }
@@ -14,6 +23,7 @@ namespace StakHappy.Core.Data.Persistor
         {
             var connectionString = System.Configuration.ConfigurationManager
                 .ConnectionStrings["StakHappy"].ConnectionString;
+
             DbContext = new Context(connectionString);
             Repository = new SqlRepository<T>(DbContext);
         }

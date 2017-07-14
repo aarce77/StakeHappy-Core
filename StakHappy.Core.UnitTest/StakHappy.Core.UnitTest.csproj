@@ -36,6 +36,12 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="FluentValidation, Version=7.0.0.0, Culture=neutral, PublicKeyToken=7de548da2fbae0f0, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentValidation.7.1.0\lib\net45\FluentValidation.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhino.Mocks, Version=3.6.0.0, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
+      <HintPath>..\packages\RhinoMocks.3.6.1\lib\net\Rhino.Mocks.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -76,7 +82,13 @@
     <Compile Include="Data\Persistor\User\IsUserNameInUseFixture.cs" />
     <Compile Include="Data\Persistor\User\SaveFixture.cs" />
     <Compile Include="Data\Persistor\Utils.cs" />
+    <Compile Include="Logic\UserLogic\FindFixture.cs" />
+    <Compile Include="Logic\UserLogic\GetFixture.cs" />
+    <Compile Include="Logic\UserLogic\IsUserNameInUseFixture.cs" />
+    <Compile Include="Logic\UserLogic\SaveFixture.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Validation\UserValidator\ValidateFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -86,6 +98,14 @@
     <ProjectReference Include="..\StakHappy.Core.Data\StakHappy.Core.Data.csproj">
       <Project>{6eb8a58a-36b5-4005-8d62-5a820a6b8142}</Project>
       <Name>StakHappy.Core.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StakHappy.Core.Logic\StakHappy.Core.Logic.csproj">
+      <Project>{26c3f963-7691-48dd-8d71-b5f68f5c9e4c}</Project>
+      <Name>StakHappy.Core.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StakHappy.Core.Validation\StakHappy.Core.Validation.csproj">
+      <Project>{ddbd10f6-49f7-4776-ab70-0e173be28ca4}</Project>
+      <Name>StakHappy.Core.Validation</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

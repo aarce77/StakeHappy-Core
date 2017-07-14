@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("StakHappy.Core.Data")]
+[assembly: AssemblyTitle("StakHappy.Core.Validation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("StakHappy.Core.Data")]
+[assembly: AssemblyProduct("StakHappy.Core.Validation")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6eb8a58a-36b5-4005-8d62-5a820a6b8142")]
+[assembly: Guid("ddbd10f6-49f7-4776-ab70-0e173be28ca4")]
 
 // Version information for an assembly consists of the following four values:
 //
