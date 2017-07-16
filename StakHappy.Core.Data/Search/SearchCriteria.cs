@@ -2,7 +2,7 @@
 
 namespace StakHappy.Core.Data.Search
 {
-    public class SearchCriteria
+    public class SearchCriteria : ISearchCriteria
     {
         public int? PageSize { get; set; }
         public int? Page { get; set; }

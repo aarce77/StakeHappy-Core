@@ -7,11 +7,17 @@ namespace StakHappy.Core.Logic
     public class PaymentLogic : LogicBase
     {
         #region Dependencies
-        private Data.Persistor.Payment _paymentPersistor;
-        internal Data.Persistor.Payment PaymentPersistor
+        private readonly Data.Persistor.Payment PaymentPersistor;
+        #endregion
+
+        #region Constructor
+        public PaymentLogic()
         {
-            get { return Dependency.Get(_paymentPersistor); }
-            set { _paymentPersistor = value; }
+            PaymentPersistor = Dependency.Get<Data.Persistor.Payment>();
+        }
+        public PaymentLogic(Data.Persistor.Payment paymentPersistor)
+        {
+            PaymentPersistor = paymentPersistor;
         }
         #endregion
 

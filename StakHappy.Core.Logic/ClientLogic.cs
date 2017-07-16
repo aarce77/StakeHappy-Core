@@ -7,17 +7,19 @@ namespace StakHappy.Core.Logic
     {
         #region Dependencies
         private Data.Persistor.Client _clientPersistor;
-        internal Data.Persistor.Client ClientPersistor
-        {
-            get { return Dependency.Get(_clientPersistor); }
-            set { _clientPersistor = value; }
-        }
-
         private Data.Persistor.ClientContact _clientContactPersistor;
-        internal Data.Persistor.ClientContact ClientContanctPersistor
-        {
-            get { return Dependency.Get(_clientContactPersistor); }
-            set { _clientContactPersistor = value; }
+        #endregion
+
+        #region
+        public ClientLogic() {
+            _clientPersistor = Dependency.Get<Data.Persistor.Client>();
+            _clientContactPersistor = Dependency.Get<Data.Persistor.ClientContact>();
+        }
+        public ClientLogic(
+            Data.Persistor.Client clientPersister, 
+            Data.Persistor.ClientContact clientContanctPersistor) {
+            _clientPersistor = clientPersister;
+            _clientContactPersistor = clientContanctPersistor;
         }
         #endregion
 
@@ -30,7 +32,7 @@ namespace StakHappy.Core.Logic
         {
             if(id == Guid.Empty)
                 throw new ArgumentException("client id cannot be empty");
-            return ClientPersistor.Get(id);
+            return _clientPersistor.Get(id);
         }
 
         /// <summary>
@@ -44,22 +46,22 @@ namespace StakHappy.Core.Logic
                 throw new ArgumentException("User id most be specified to save a client");
 
             var isNew = client.Id == Guid.Empty;
-            var result = ClientPersistor.Save(client);
+            var result = _clientPersistor.Save(client);
 
             if (!isNew)
             {
-                ClientPersistor.Commit();
+                _clientPersistor.Commit();
                 return result;
             }
 
             foreach (var clientContact in client.Contacts)
             {
                 clientContact.Client_Id = result.Id;
-                ClientContanctPersistor.Save(clientContact);   
+                _clientContactPersistor.Save(clientContact);   
             }
 
-            ClientPersistor.Commit();
-            ClientContanctPersistor.Commit();
+            _clientPersistor.Commit();
+            _clientContactPersistor.Commit();
             return result;
         }
 
@@ -74,8 +76,8 @@ namespace StakHappy.Core.Logic
             if (id == Guid.Empty)
                 throw new ArgumentException("client id cannot be empty");
 
-            ClientPersistor.Delete(id);
-            ClientPersistor.Commit();
+            _clientPersistor.Delete(id);
+            _clientPersistor.Commit();
         }
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace StakHappy.Core.Logic
         public virtual IQueryable<Data.Model.Client> Search(Data.Search.ClientCriteria criteria)
         {
             VaildateCriteria(criteria);
-            return ClientPersistor.Search(criteria);
+            return _clientPersistor.Search(criteria);
         }
 
         /// <summary>
@@ -100,8 +102,8 @@ namespace StakHappy.Core.Logic
             if(contact.Client_Id == Guid.Empty)
                 throw new ArgumentException("client id cannot be empty");
 
-            var entity = ClientContanctPersistor.Save(contact);
-            ClientContanctPersistor.Commit();
+            var entity = _clientContactPersistor.Save(contact);
+            _clientContactPersistor.Commit();
 
             return entity;
         }
@@ -116,18 +118,18 @@ namespace StakHappy.Core.Logic
             if (id == Guid.Empty)
                 throw new ArgumentException("client contact id cannot be empty");
 
-            ClientContanctPersistor.Delete(id);
-            ClientContanctPersistor.Commit();
+            _clientContactPersistor.Delete(id);
+            _clientContactPersistor.Commit();
         }
 
         public virtual Data.Model.Client GetNewClientObject()
         {
-            return ClientPersistor.Create();
+            return _clientPersistor.Create();
         }
 
         public virtual Data.Model.ClientContact GetNewClientContactObject()
         {
-            return ClientContanctPersistor.Create();
+            return _clientContactPersistor.Create();
         }
     }
 }

@@ -7,10 +7,17 @@ namespace StakHappy.Core.Logic
     {
         #region Dependencies
         private Data.Persistor.UserService _userServicePersistor;
-        internal Data.Persistor.UserService UserServicePersistor
+        #endregion
+
+        #region Constructor
+        public UserServiceLogic()
         {
-            get { return Dependency.Get(_userServicePersistor); }
-            set { _userServicePersistor = value; }
+            _userServicePersistor = Dependency.Get<Data.Persistor.UserService>();
+        }
+
+        public UserServiceLogic(Data.Persistor.UserService userServicePersistor)
+        {
+            _userServicePersistor = userServicePersistor;
         }
         #endregion
 
@@ -18,12 +25,12 @@ namespace StakHappy.Core.Logic
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("service id cannot be empty");
-            return UserServicePersistor.Get(id);
+            return _userServicePersistor.Get(id);
         }
 
         public virtual IQueryable<Data.Model.UserService> GetList(System.Linq.Expressions.Expression<Func<Data.Model.UserService, bool>> predicate)
         {
-            return UserServicePersistor.Get(predicate);
+            return _userServicePersistor.Get(predicate);
         }
 
         /// <summary>
@@ -36,8 +43,8 @@ namespace StakHappy.Core.Logic
             if(userService.User_Id == Guid.Empty)
                 throw new ArgumentException("user id most be specified to save a user service");
 
-            var service = UserServicePersistor.Save(userService);
-            UserServicePersistor.Commit();
+            var service = _userServicePersistor.Save(userService);
+            _userServicePersistor.Commit();
             return service;
         }
 
@@ -52,8 +59,8 @@ namespace StakHappy.Core.Logic
             if (id == Guid.Empty)
                 throw new ArgumentException("user service id cannot be empty");
 
-            UserServicePersistor.Delete(id);
-            UserServicePersistor.Commit();
+            _userServicePersistor.Delete(id);
+            _userServicePersistor.Commit();
         }
     }
 

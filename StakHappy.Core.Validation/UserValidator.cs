@@ -1,36 +1,19 @@
 ﻿using System;
 using FluentValidation;
+using StakHappy.Core.Data.Model;
 
 namespace StakHappy.Core.Validation
 {
-    public class UserValidator : AbstractValidator<Data.Model.User>, IValidator
+    public class UserValidator : ValidatorBase<User>, IValidator
     {
         public UserValidator()
         {
             Inititalize();
         }
 
-        public virtual ValidatorResult Validate(Data.Model.IEntity entity)
+        public virtual ValidatorResult Validate(IEntity entity)
         {
-            var vr = new ValidatorResult(true);
-
-            var user = (entity as Data.Model.User);
-            var results = base.Validate(user);
-
-            vr.IsValid = results.IsValid;
-            if (results.IsValid)
-                return vr;
-
-            foreach (var error in results.Errors)
-            {
-                vr.Errors.Add(new ValidatorFailure
-                {
-                    PropertyName = error.PropertyName,
-                    Message = error.ErrorMessage
-                });
-            }
-
-            return vr;
+            return GetResult(base.Validate((entity as User)));
         }
 
         private void Inititalize()

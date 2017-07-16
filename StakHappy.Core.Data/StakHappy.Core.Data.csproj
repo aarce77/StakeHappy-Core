@@ -88,6 +88,7 @@
     <Compile Include="Search\ClientCriteria.cs" />
     <Compile Include="Search\DateTimeRange.cs" />
     <Compile Include="Search\InvoiceCriteria.cs" />
+    <Compile Include="Search\ISearchCriteria.cs" />
     <Compile Include="Search\SearchCriteria.cs" />
     <Compile Include="SqlRepository.cs" />
   </ItemGroup>

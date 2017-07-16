@@ -12,7 +12,7 @@ namespace StakHappy.Core.Logic
 
         #region Constructor
         public UserLogic() {
-            _persistor = Dependency.Get(_persistor);
+            _persistor = Dependency.Get<Data.Persistor.User>();
             _validator = Dependency.Get<Validation.UserValidator>();
         }
 

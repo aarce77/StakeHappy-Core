@@ -7,17 +7,22 @@ namespace StakHappy.Core.Logic
     {
         #region Dependencies
         private Data.Persistor.Invoice _invoicePersistor;
-        internal Data.Persistor.Invoice InvoicePersistor
+        private Data.Persistor.InvoiceItem _invoiceItemPersistor;
+        #endregion
+
+        #region Constructor
+        public InvoiceLogic()
         {
-            get { return Dependency.Get(_invoicePersistor); }
-            set { _invoicePersistor = value; }
+            _invoicePersistor = Dependency.Get<Data.Persistor.Invoice>();
+            _invoiceItemPersistor = Dependency.Get<Data.Persistor.InvoiceItem>();
         }
 
-        private Data.Persistor.InvoiceItem _invoiceItemPersistor;
-        internal Data.Persistor.InvoiceItem InvoiceItemPersistor
+        public InvoiceLogic(
+            Data.Persistor.Invoice invoicePersistor, 
+            Data.Persistor.InvoiceItem invoiceItemPersistor)
         {
-            get { return Dependency.Get(_invoiceItemPersistor); }
-            set { _invoiceItemPersistor = value; }
+            _invoicePersistor = invoicePersistor;
+            _invoiceItemPersistor = invoiceItemPersistor;
         }
         #endregion
 
@@ -30,7 +35,7 @@ namespace StakHappy.Core.Logic
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("invoice id cannot be empty");
-            return InvoicePersistor.Get(id);
+            return _invoicePersistor.Get(id);
         }
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace StakHappy.Core.Logic
         public virtual IQueryable<Data.Model.Invoice> Search(Data.Search.InvoiceCriteria criteria)
         {
             VaildateCriteria(criteria);
-            return InvoicePersistor.Search(criteria);
+            return _invoicePersistor.Search(criteria);
         }
 
         /// <summary>
@@ -83,25 +88,25 @@ namespace StakHappy.Core.Logic
                 throw new ArgumentException("Client id most be specified to save an invoice");
 
             var isNew = invoice.Id == Guid.Empty;
-            var result = InvoicePersistor.Save(invoice);
+            var result = _invoicePersistor.Save(invoice);
 
             if (!isNew)
             {
-                InvoicePersistor.Commit();
-                InvoicePersistor.UpdateUserId(userId, invoice.Id);
+                _invoicePersistor.Commit();
+                _invoicePersistor.UpdateUserId(userId, invoice.Id);
                 return result;
             }
 
             foreach (var item in invoice.Items)
             {
                 item.Invoice_Id = result.Id;
-                InvoiceItemPersistor.Save(item);
+                _invoiceItemPersistor.Save(item);
             }
 
-            InvoicePersistor.Commit();
+            _invoicePersistor.Commit();
             if (invoice.Items.Any())
-                InvoiceItemPersistor.Commit();
-            InvoicePersistor.UpdateUserId(userId, invoice.Id);
+                _invoiceItemPersistor.Commit();
+            _invoicePersistor.UpdateUserId(userId, invoice.Id);
 
             return result;
         }
@@ -117,14 +122,14 @@ namespace StakHappy.Core.Logic
             if (id == Guid.Empty)
                 throw new ArgumentException("invoice id cannot be empty");
 
-            var invoice = InvoicePersistor.Get(id);
+            var invoice = _invoicePersistor.Get(id);
             // verify that the invoice dosen't have any payments
             // we can't delete invoices that have payments
             if (invoice.Payments != null && invoice.Payments.Count > 0)
                 throw new NotImplementedException("an invoice that contains a payment can not be deleted");
 
-            InvoicePersistor.Delete(id);
-            InvoicePersistor.Commit();
+            _invoicePersistor.Delete(id);
+            _invoicePersistor.Commit();
         }
 
         /// <summary>
@@ -138,8 +143,8 @@ namespace StakHappy.Core.Logic
             if (invoiceItem.Invoice_Id == Guid.Empty)
                 throw new ArgumentException("invoice id cannot be empty");
 
-            var item = InvoiceItemPersistor.Save(invoiceItem);
-            InvoiceItemPersistor.Commit();
+            var item = _invoiceItemPersistor.Save(invoiceItem);
+            _invoiceItemPersistor.Commit();
 
             return item;
         }
@@ -153,18 +158,18 @@ namespace StakHappy.Core.Logic
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("invoice item id cannot be empty");
-            InvoiceItemPersistor.Delete(id);
-            InvoiceItemPersistor.Commit();
+            _invoiceItemPersistor.Delete(id);
+            _invoiceItemPersistor.Commit();
         }
 
         public virtual Data.Model.Invoice GetNewInvoiceObject()
         {
-            return InvoicePersistor.Create();
+            return _invoicePersistor.Create();
         }
 
         public virtual Data.Model.InvoiceItem GetNewInvoiceItemObject()
         {
-            return InvoiceItemPersistor.Create();
+            return _invoiceItemPersistor.Create();
         }
     }
 }
