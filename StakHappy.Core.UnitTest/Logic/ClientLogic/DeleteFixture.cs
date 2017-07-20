@@ -12,7 +12,7 @@ namespace StakHappy.Core.UnitTest.Logic.ClientLogic
         public void EmptyId()
         {
             var ex = Assert.Throws<ArgumentException>(() => new Core.Logic.ClientLogic().Delete(Guid.Empty));
-            Assert.Equal("client id cannot be empty", ex.Message);
+            Assert.Equal("id cannot be empty", ex.Message);
         }
 
         [Fact]

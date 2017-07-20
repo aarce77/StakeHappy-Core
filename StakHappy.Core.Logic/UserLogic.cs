@@ -3,51 +3,33 @@ using System.Linq;
 
 namespace StakHappy.Core.Logic
 {
-    public class UserLogic : LogicBase
+    public class UserLogic : LogicBase<Data.Model.User>
     {
         #region Dependencies
-        private Data.Persistor.User _persistor;
-        private Validation.IValidator _validator;
+        private readonly Validation.IValidator Validator;
         #endregion
 
         #region Constructor
         public UserLogic() {
-            _persistor = Dependency.Get<Data.Persistor.User>();
-            _validator = Dependency.Get<Validation.UserValidator>();
+            Persistor = Dependency.Get<Data.Persistor.User>();
+            Validator = Dependency.Get<Validation.UserValidator>();
         }
 
         public UserLogic(Data.Persistor.User persistor, Validation.IValidator validator) {
-            _persistor = persistor;
-            _validator = validator;
+            Persistor = persistor;
+            Validator = validator;
         }
         #endregion
 
-        /// <summary>
-        /// Retrieves a user by the specified id.
-        /// </summary>
-        /// <param name="id">The user id.</param>
-        /// <returns></returns>
-        public virtual Data.Model.User Get(Guid id)
-        {
-            if(id == Guid.Empty)
-                throw new ArgumentException("user id cannot be empty");
-
-            return _persistor.Get(id);
-        }
-
-        /// <summary>
-        /// Saves the specified user.
-        /// </summary>
-        /// <param name="user">The user.</param>
         [TransactionInterceptor]
-        public virtual Data.Model.User Save(Data.Model.User user)
+        public override Data.Model.User Save(Data.Model.User user)
         {
-            var result = _validator.Validate(user);
+            var result = Validator.Validate(user);
 
             if (result.IsValid)
             {
-                var entity = _persistor.Save(user);
-                _persistor.Commit();
+                var entity = Persistor.Save(user);
+                Persistor.Commit();
                 return entity;
             }
             var properties = result.Errors.Select(e => e.PropertyName).ToArray();
@@ -67,7 +49,7 @@ namespace StakHappy.Core.Logic
             if(string.IsNullOrEmpty(username))
                 throw new ArgumentNullException("username");
 
-            return _persistor.IsUserNameInUse(username, userId);
+            return (Persistor as Data.Persistor.User).IsUserNameInUse(username, userId);
         }
 
         /// <summary>
@@ -77,7 +59,7 @@ namespace StakHappy.Core.Logic
         /// <returns></returns>
         public virtual Data.Model.User GetByUsername(string username)
         {
-            return _persistor.Get(u => u.UserName == username).FirstOrDefault();
+            return Persistor.Get(u => u.UserName == username).FirstOrDefault();
         }
 
         /// <summary>
@@ -86,30 +68,12 @@ namespace StakHappy.Core.Logic
         /// <param name="id">The user id.</param>
         public virtual void Deactivate(Guid id)
         {
-            var user = _persistor.Get(id);
+            var user = Persistor.Get(id);
 
             user.Active = false;
-            _persistor.Save(user);
+            Persistor.Save(user);
+            Persistor.Commit();
         }
 
-        /// <summary>
-        /// Gets a new user model object
-        /// </summary>
-        /// <returns></returns>
-        public virtual Data.Model.User GetNewUser()
-        {
-            return _persistor.Create();
-        }
-
-        /// <summary>
-        /// Finds the specified predicate.
-        /// </summary>
-        /// <param name="predicate">The predicate.</param>
-        /// <returns></returns>
-        public virtual IQueryable<Data.Model.User> Find(
-            System.Linq.Expressions.Expression<Func<Data.Model.User, bool>> predicate)
-        {
-            return _persistor.Get(predicate);
-        }
     }
 }

@@ -4,74 +4,30 @@ using System.Linq;
 
 namespace StakHappy.Core.Logic
 {
-    public class PaymentLogic : LogicBase
+    public class PaymentLogic : LogicBase<Data.Model.Payment>
     {
-        #region Dependencies
-        private readonly Data.Persistor.Payment PaymentPersistor;
-        #endregion
-
         #region Constructor
         public PaymentLogic()
         {
-            PaymentPersistor = Dependency.Get<Data.Persistor.Payment>();
+            Persistor = Dependency.Get<Data.Persistor.Payment>();
         }
         public PaymentLogic(Data.Persistor.Payment paymentPersistor)
         {
-            PaymentPersistor = paymentPersistor;
+            Persistor = paymentPersistor;
         }
         #endregion
-
-        /// <summary>
-        /// Reads a payment by the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public virtual Data.Model.Payment Get(Guid id)
-        {
-            if (id == Guid.Empty)
-                throw new ArgumentException("Payment id cannot be empty");
-            return PaymentPersistor.Get(id);
-        }
-
-        public virtual IQueryable<Data.Model.Payment> GetPayments(Guid invoiceId)
-        {
-            return PaymentPersistor.Get(p => p.Invoice_Id == invoiceId);
-        }
 
         /// <summary>
         /// Saves the payments.s
         /// </summary>
         /// <param name="payment">The payment.</param>
         [TransactionInterceptor]
-        public virtual Data.Model.Payment Save(Data.Model.Payment payment)
+        public override Data.Model.Payment Save(Data.Model.Payment payment)
         {
             if (payment.Invoice_Id == Guid.Empty)
                 throw new ArgumentException("Invoice id most be specified to apply a payment");
 
-            var entity = PaymentPersistor.Save(payment);
-            PaymentPersistor.Commit();
-
-            return entity;
-        }
-
-        /// <summary>
-        /// Deletes the payment by the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <exception cref="System.ArgumentException">client id cannot be empty</exception>
-        [TransactionInterceptor]
-        public virtual void Delete(Guid id)
-        {
-            if (id == Guid.Empty)
-                throw new ArgumentException("Payment id cannot be empty");
-
-            PaymentPersistor.Delete(id);
-            PaymentPersistor.Commit();
-        }
-
-        public virtual Data.Model.Payment GetNewPaymentObject()
-        {
-            return PaymentPersistor.Create();
+            return base.Save(payment);
         }
 
         public virtual List<Data.Model.PaymentType> GetPaymentTypes()

@@ -1,76 +1,43 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace StakHappy.Core.Logic
 {
-    public class InvoiceLogic : LogicBase
+    public class InvoiceLogic : LogicBase<Data.Model.Invoice>
     {
         #region Dependencies
-        private Data.Persistor.Invoice _invoicePersistor;
-        private Data.Persistor.InvoiceItem _invoiceItemPersistor;
+        private readonly Data.Persistor.InvoiceItem InvoiceItemPersistor;
+        private readonly Data.Persistor.Client ClientPersistor;
         #endregion
 
         #region Constructor
         public InvoiceLogic()
         {
-            _invoicePersistor = Dependency.Get<Data.Persistor.Invoice>();
-            _invoiceItemPersistor = Dependency.Get<Data.Persistor.InvoiceItem>();
+            Persistor = Dependency.Get<Data.Persistor.Invoice>();
+            InvoiceItemPersistor = Dependency.Get<Data.Persistor.InvoiceItem>();
+            ClientPersistor = Dependency.Get<Data.Persistor.Client>();
         }
 
         public InvoiceLogic(
             Data.Persistor.Invoice invoicePersistor, 
-            Data.Persistor.InvoiceItem invoiceItemPersistor)
+            Data.Persistor.InvoiceItem invoiceItemPersistor,
+            Data.Persistor.Client clientPersistor)
         {
-            _invoicePersistor = invoicePersistor;
-            _invoiceItemPersistor = invoiceItemPersistor;
+            Persistor = invoicePersistor;
+            InvoiceItemPersistor = invoiceItemPersistor;
+            ClientPersistor = clientPersistor;
         }
         #endregion
 
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public virtual Data.Model.Invoice Get(Guid id)
+        public override Data.Model.Invoice Save(Data.Model.Invoice invoice)
         {
-            if (id == Guid.Empty)
-                throw new ArgumentException("invoice id cannot be empty");
-            return _invoicePersistor.Get(id);
-        }
+            if (invoice.Client_Id == Guid.Empty)
+                throw new ArgumentException("Client id most be specified to save an invoice");
 
-        /// <summary>
-        /// searches the invoices.
-        /// </summary>
-        /// <param name="criteria">The criteria.</param>
-        /// <returns></returns>
-        public virtual IQueryable<Data.Model.Invoice> Search(Data.Search.InvoiceCriteria criteria)
-        {
-            VaildateCriteria(criteria);
-            return _invoicePersistor.Search(criteria);
-        }
+            var userId = ClientPersistor.Get(invoice.Client_Id).User_Id;
 
-        /// <summary>
-        /// Vaildates the criteria.
-        /// </summary>
-        /// <param name="criteria">The criteria.</param>
-        /// <exception cref="NullReferenceException">Invoice search criteria could not be cast to the proper type</exception>
-        /// <remarks>
-        /// This method is tested in the client/SearchFixture unit test
-        /// </remarks>
-        internal override void VaildateCriteria(Data.Search.SearchCriteria criteria)
-        {
-            base.VaildateCriteria(criteria);
-
-            var invCriteria = (criteria as Data.Search.InvoiceCriteria);
-            if(invCriteria == null)
-                throw new NullReferenceException("Invoice search criteria could not be cast to the proper type");
-
-            if (invCriteria.VoidedDateRange != null &&
-                (invCriteria.VoidedDateRange.From != default(DateTime) ||
-                 invCriteria.VoidedDateRange.To != default(DateTime)))
-            {
-                invCriteria.Voided = true;
-            }
+            return Save(userId, invoice);
         }
 
         /// <summary>
@@ -88,25 +55,25 @@ namespace StakHappy.Core.Logic
                 throw new ArgumentException("Client id most be specified to save an invoice");
 
             var isNew = invoice.Id == Guid.Empty;
-            var result = _invoicePersistor.Save(invoice);
+            var result = Persistor.Save(invoice);
 
             if (!isNew)
             {
-                _invoicePersistor.Commit();
-                _invoicePersistor.UpdateUserId(userId, invoice.Id);
+                Persistor.Commit();
+                (Persistor as Data.Persistor.Invoice).UpdateUserId(userId, invoice.Id);
                 return result;
             }
 
             foreach (var item in invoice.Items)
             {
                 item.Invoice_Id = result.Id;
-                _invoiceItemPersistor.Save(item);
+                InvoiceItemPersistor.Save(item);
             }
 
-            _invoicePersistor.Commit();
+            Persistor.Commit();
             if (invoice.Items.Any())
-                _invoiceItemPersistor.Commit();
-            _invoicePersistor.UpdateUserId(userId, invoice.Id);
+                InvoiceItemPersistor.Commit();
+            (Persistor as Data.Persistor.Invoice).UpdateUserId(userId, invoice.Id);
 
             return result;
         }
@@ -117,19 +84,54 @@ namespace StakHappy.Core.Logic
         /// <param name="id">The identifier.</param>
         /// <exception cref="System.ArgumentException">client id cannot be empty</exception>
         [TransactionInterceptor]
-        public virtual void Delete(Guid id)
+        public override bool Delete(Guid id)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("invoice id cannot be empty");
 
-            var invoice = _invoicePersistor.Get(id);
+            var invoice = Persistor.Get(id);
             // verify that the invoice dosen't have any payments
             // we can't delete invoices that have payments
             if (invoice.Payments != null && invoice.Payments.Count > 0)
                 throw new NotImplementedException("an invoice that contains a payment can not be deleted");
 
-            _invoicePersistor.Delete(id);
-            _invoicePersistor.Commit();
+            Persistor.Delete(id);
+            return Persistor.Commit() > 0;
+        }
+
+        /// <summary>
+        /// searches the invoices.
+        /// </summary>
+        /// <param name="criteria">The criteria.</param>
+        /// <returns></returns>
+        public virtual IQueryable<Data.Model.Invoice> Search(Data.Search.InvoiceCriteria criteria)
+        {
+            VaildateCriteria(criteria);
+            return (Persistor as Data.Persistor.Invoice).Search(criteria);
+        }
+
+        /// <summary>
+        /// Vaildates the criteria.
+        /// </summary>
+        /// <param name="criteria">The criteria.</param>
+        /// <exception cref="NullReferenceException">Invoice search criteria could not be cast to the proper type</exception>
+        /// <remarks>
+        /// This method is tested in the client/SearchFixture unit test
+        /// </remarks>
+        internal override void VaildateCriteria(Data.Search.SearchCriteria criteria)
+        {
+            base.VaildateCriteria(criteria);
+
+            var invCriteria = (criteria as Data.Search.InvoiceCriteria);
+            if (invCriteria == null)
+                throw new NullReferenceException("Invoice search criteria could not be cast to the proper type");
+
+            if (invCriteria.VoidedDateRange != null &&
+                (invCriteria.VoidedDateRange.From != default(DateTime) ||
+                 invCriteria.VoidedDateRange.To != default(DateTime)))
+            {
+                invCriteria.Voided = true;
+            }
         }
 
         /// <summary>
@@ -143,8 +145,8 @@ namespace StakHappy.Core.Logic
             if (invoiceItem.Invoice_Id == Guid.Empty)
                 throw new ArgumentException("invoice id cannot be empty");
 
-            var item = _invoiceItemPersistor.Save(invoiceItem);
-            _invoiceItemPersistor.Commit();
+            var item = InvoiceItemPersistor.Save(invoiceItem);
+            InvoiceItemPersistor.Commit();
 
             return item;
         }
@@ -154,22 +156,19 @@ namespace StakHappy.Core.Logic
         /// </summary>
         /// <param name="id">The client contact identifier.</param>
         [TransactionInterceptor]
-        public virtual void DeleteInvoiceItem(Guid id)
+        public virtual bool DeleteInvoiceItem(Guid id)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("invoice item id cannot be empty");
-            _invoiceItemPersistor.Delete(id);
-            _invoiceItemPersistor.Commit();
+            InvoiceItemPersistor.Delete(id);
+            InvoiceItemPersistor.Commit();
+
+            return true;
         }
 
-        public virtual Data.Model.Invoice GetNewInvoiceObject()
+        public virtual Data.Model.InvoiceItem GetNewInvoiceItemModel()
         {
-            return _invoicePersistor.Create();
-        }
-
-        public virtual Data.Model.InvoiceItem GetNewInvoiceItemObject()
-        {
-            return _invoiceItemPersistor.Create();
+            return InvoiceItemPersistor.Create();
         }
     }
 }

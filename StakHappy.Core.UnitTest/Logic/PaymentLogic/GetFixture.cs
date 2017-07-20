@@ -13,7 +13,7 @@ namespace StakHappy.Core.UnitTest.Logic.PaymentLogic
         {
             var ex = Assert.Throws<ArgumentException>(() => new Core.Logic.PaymentLogic().Get(Guid.Empty));
 
-            Assert.Equal("Payment id cannot be empty", ex.Message);
+            Assert.Equal("id cannot be empty", ex.Message);
         }
 
         [Fact]

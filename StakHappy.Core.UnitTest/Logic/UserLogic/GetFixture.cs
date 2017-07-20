@@ -13,7 +13,7 @@ namespace StakHappy.Core.UnitTest.Logic.UserLogic
         {
             var ex = Assert.Throws<ArgumentException>(() => new Core.Logic.UserLogic().Get(Guid.Empty));
 
-            Assert.Equal("user id cannot be empty", ex.Message);
+            Assert.Equal("id cannot be empty", ex.Message);
         }
 
         [Fact]

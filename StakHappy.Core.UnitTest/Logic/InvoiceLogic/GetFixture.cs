@@ -13,7 +13,7 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
         {
             var ex = Assert.Throws<ArgumentException>(() => new Core.Logic.InvoiceLogic().Get(Guid.Empty));
 
-            Assert.Equal("invoice id cannot be empty", ex.Message);
+            Assert.Equal("id cannot be empty", ex.Message);
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
 
             // mocks
             var invoicePersistor = Mocks.StrictMock<Core.Data.Persistor.Invoice>();
-            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor, null);
+            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor, null, null);
 
             bll.Expect(b => b.Get(user.Id)).CallOriginalMethod(OriginalCallOptions.NoExpectation);
             invoicePersistor.Expect(d => d.Get(user.Id)).Return(user);

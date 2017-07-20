@@ -24,7 +24,7 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
 
             // mocks
             var invoiceItemPersistor = Mocks.StrictMock<Core.Data.Persistor.InvoiceItem>();
-            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(null, invoiceItemPersistor);
+            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(null, invoiceItemPersistor, null);
 
             bll.Expect(b => b.DeleteInvoiceItem(id)).CallOriginalMethod(OriginalCallOptions.NoExpectation);
             invoiceItemPersistor.Expect(d => d.Delete(id));

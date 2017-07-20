@@ -32,6 +32,51 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
         }
 
         [Fact]
+        public void SuccessfulInsertWithUserIdLookup()
+        {
+            // data
+            var userId = Guid.NewGuid();
+            var invoiceId = Guid.NewGuid();
+            var clientId = Guid.NewGuid();
+            var client = new Core.Data.Model.Client { Id = clientId, User_Id = userId };
+            var invoice = new Core.Data.Model.Invoice
+            {
+                Id = Guid.Empty,
+                Client_Id = clientId,
+                Active = true,
+                CreatedDate = DateTime.Now,
+                Items = new List<Core.Data.Model.InvoiceItem>
+                {
+                    new Core.Data.Model.InvoiceItem
+                    {
+                        Id = Guid.NewGuid()
+                    },
+                    new Core.Data.Model.InvoiceItem
+                    {
+                        Id = Guid.NewGuid()
+                    }
+                }
+            };
+
+            // mocks
+            var invoicePersistor = Mocks.StrictMock<Core.Data.Persistor.Invoice>();
+            var invoiceItemPersistor = Mocks.StrictMock<Core.Data.Persistor.InvoiceItem>();
+            var clientPersistor = Mocks.StrictMock<Core.Data.Persistor.Client>();
+            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor, invoiceItemPersistor, clientPersistor);
+
+            // record
+            bll.Expect(b => b.Save(invoice)).CallOriginalMethod(OriginalCallOptions.NoExpectation);
+
+            clientPersistor.Expect(c => c.Get(invoice.Client_Id)).Return(client);
+            bll.Expect(b => b.Save(userId, invoice)).Return(invoice);
+
+            Mocks.ReplayAll();
+            var result = bll.Save(invoice);
+
+            Assert.Equal(invoice.Id, result.Id);
+        }
+
+        [Fact]
         public void SuccessfulInsert()
         {
             // data
@@ -59,7 +104,7 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
             // mocks
             var invoicePersistor = Mocks.StrictMock<Core.Data.Persistor.Invoice>();
             var invoiceItemPersistor = Mocks.StrictMock<Core.Data.Persistor.InvoiceItem>();
-            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor, invoiceItemPersistor);
+            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor, invoiceItemPersistor, null);
             
             // record
             bll.Expect(b => b.Save(userId, invoice)).CallOriginalMethod(OriginalCallOptions.NoExpectation);
@@ -99,7 +144,7 @@ namespace StakHappy.Core.UnitTest.Logic.InvoiceLogic
 
             // mocks
             var invoicePersistor = Mocks.StrictMock<Core.Data.Persistor.Invoice>();
-            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor,null);
+            var bll = Mocks.StrictMock<Core.Logic.InvoiceLogic>(invoicePersistor,null, null);
 
             // record
             bll.Expect(b => b.Save(userId, invoice)).CallOriginalMethod(OriginalCallOptions.NoExpectation);
