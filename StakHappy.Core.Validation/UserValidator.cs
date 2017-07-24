@@ -18,7 +18,7 @@ namespace StakHappy.Core.Validation
 
         private void Inititalize()
         {
-            RuleFor(u => u.Id).NotEqual(Guid.Empty).WithMessage("Id is required");
+            RuleFor(u => u.Id).NotEqual(Guid.Empty).When(u => u.CreatedDate.Date != DateTime.Now.Date).WithMessage("Id is required");  // this becomes a problem when obejct being saved is a new user
             RuleFor(u => u.UserName).NotEmpty().WithMessage("Username is required");
             RuleFor(u => u.Email).NotEmpty().WithMessage("Email is required");
         }

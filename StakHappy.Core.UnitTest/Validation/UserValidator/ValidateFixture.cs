@@ -37,7 +37,7 @@ namespace StakHappy.Core.UnitTest.Validation.UserValidator
         [Fact]
         public void FailedOn_UserNameIsRequired()
         {
-            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), Email = "email" };
+            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), Email = "email", CreatedDate = DateTime.Now };
             var result = new Core.Validation.UserValidator().Validate(user);
 
             Assert.Equal(result.IsValid, false);
@@ -48,7 +48,7 @@ namespace StakHappy.Core.UnitTest.Validation.UserValidator
         [Fact]
         public void FailedOn_EmailIsRequired()
         {
-            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), UserName="username" };
+            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), UserName="username", CreatedDate = DateTime.Now };
             var result = new Core.Validation.UserValidator().Validate(user);
 
             Assert.Equal(result.IsValid, false);
@@ -59,7 +59,17 @@ namespace StakHappy.Core.UnitTest.Validation.UserValidator
         [Fact]
         public void Successful()
         {
-            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), UserName = "username", Email = "email" };
+            var user = new Core.Data.Model.User { Id = Guid.NewGuid(), UserName = "username", Email = "email", CreatedDate = DateTime.Now };
+            var result = new Core.Validation.UserValidator().Validate(user);
+
+            Assert.Equal(result.IsValid, true);
+            Assert.Equal(result.Errors.Count, 0);
+        }
+
+        [Fact]
+        public void Successful_NewUser()
+        {
+            var user = new Core.Data.Model.User { UserName = "username", Email = "email", CreatedDate = DateTime.Now };
             var result = new Core.Validation.UserValidator().Validate(user);
 
             Assert.Equal(result.IsValid, true);

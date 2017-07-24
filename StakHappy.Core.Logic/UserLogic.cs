@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using StakHappy.Core.Data.Model;
 
 namespace StakHappy.Core.Logic
 {
@@ -35,6 +36,14 @@ namespace StakHappy.Core.Logic
             var properties = result.Errors.Select(e => e.PropertyName).ToArray();
             throw new ArgumentException("One or more properties a required",
                 String.Join(", ", properties.ToArray()));
+        }
+
+        public override User GetNewModelIntance()
+        {
+            var user = base.GetNewModelIntance();
+            user.Active = true;
+            user.CreatedDate = DateTime.Now;
+            return user;
         }
 
         /// <summary>
